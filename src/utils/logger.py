@@ -1,6 +1,7 @@
 import time
 import logging
 from functools import wraps
+from datetime import datetime
 
 logging.basicConfig(
     level=logging.INFO,
@@ -10,31 +11,26 @@ logger = logging.getLogger(__name__)
 
 
 def log_execution_time(func):
-    """Decorator that logs the execution time of a function.
-    
-    Args:
-        func: The function to be decorated.
-        
-    Returns:
-        The wrapped function that logs its execution time.
-        
-    Example:
-        @log_execution_time
-        def process_data(df):
-            return df.transform()
-    """
+    """Decorator that logs start time, end time, and execution duration."""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
+        start_perf = time.perf_counter()
+        start_dt = datetime.now()
+
+        logger.info("Start function '%s' at %s", func.__name__, start_dt)
 
         result = func(*args, **kwargs)
 
-        end_time = time.perf_counter()
-        elapsed = end_time - start_time
+        end_perf = time.perf_counter()
+        end_dt = datetime.now()
+
+        elapsed = end_perf - start_perf
 
         logger.info(
-            "Function '%s' executed in %.4f seconds",
+            "End function '%s' at %s | elapsed %.4f seconds",
             func.__name__,
+            end_dt,
             elapsed
         )
 

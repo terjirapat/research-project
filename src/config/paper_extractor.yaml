@@ -1,0 +1,53 @@
+section_aliases:
+  abstract:
+    - abstract
+    - summary
+  
+  introduction:
+    - introduction
+    - background
+  
+  related_work:
+    - related work
+    - literature review
+    - previous work
+  
+  methodology:
+    - method
+    - methodology
+  
+  # experiments:
+  #   - experiment
+  #   - experimental setup
+  #   - evaluation setup
+  
+  result:
+    - result
+    - experimental results
+    - evaluation
+    - finding
+  
+  discussion:
+    - discussion
+    - analysis
+  
+  limitation:
+    - limitation
+  
+  conclusion:
+    - conclusion
+    - summary and conclusion
+  
+  # future_work:
+  #   - future work
+  #   - future directions
+  
+  # references:
+  #   - references
+  #   - bibliography
+  
+  # appendix:
+  #   - appendix
+  #   - supplementary material
+
+datapaper_path: '../data/paper'

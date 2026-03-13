@@ -5,8 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "boto3>=1.42.67",
     "docling>=2.76.0",
     "numpy>=2.4.2",
+    "pyyaml>=6.0.3",
     "sentence-transformers>=5.2.3",
 ]
 

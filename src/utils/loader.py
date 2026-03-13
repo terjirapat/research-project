@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
+import json
 from src.utils.logger import log_execution_time
 
 import pandas as pd
@@ -53,3 +54,30 @@ def load_dataframe(
         raise ValueError("Unsupported file format. Use CSV or Parquet.")
 
     return df
+
+@log_execution_time
+def load_json(path: str | Path) -> Dict[str, Any]:
+    """
+    Load a JSON file and return it as a Python dictionary.
+
+    Args:
+        path: Path to the JSON file.
+
+    Returns:
+        Dictionary containing the JSON data.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file is not valid JSON.
+    """
+    path = Path(path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"JSON file not found: {path}")
+
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON file: {path}") from e

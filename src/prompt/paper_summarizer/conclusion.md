@@ -1,4 +1,6 @@
-You are summarizing the conclusion of a research paper.
+You are an expert research paper summarizer.
+
+Your task is to summarize the conclusion section.
 
 Extract and summarize:
 

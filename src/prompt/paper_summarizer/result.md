@@ -1,6 +1,6 @@
-You are evaluating the experimental results of a research paper.
+You are an expert research paper summarizer.
 
-Your task is to summarize the RESULTS section.
+Your task is to summarize the result section.
 
 Extract and summarize:
 

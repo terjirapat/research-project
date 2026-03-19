@@ -20,8 +20,8 @@ class PromptPaperSummarizer:
         return (PromptPaperSummarizer.base_dir / "introduction.md").read_text(encoding='utf-8')
     
     @staticmethod
-    def method():
-        return (PromptPaperSummarizer.base_dir / "method.md").read_text(encoding='utf-8')
+    def methodology():
+        return (PromptPaperSummarizer.base_dir / "methodology.md").read_text(encoding='utf-8')
     
     @staticmethod
     def related_work():
@@ -30,3 +30,7 @@ class PromptPaperSummarizer:
     @staticmethod
     def result():
         return (PromptPaperSummarizer.base_dir / "result.md").read_text(encoding='utf-8')
+
+    @staticmethod
+    def global_summary():
+        return (PromptPaperSummarizer.base_dir / "global.md").read_text(encoding='utf-8')

@@ -1,78 +1,148 @@
+import json
 import re
 from pathlib import Path
-from typing import Dict, List
-from src.utils.logger import log_execution_time
+from typing import Dict, List, Optional
+
 from docling.document_converter import DocumentConverter
 
+from src.llms.bedrock import BedrockNova
+from src.llms.base import BaseLLM
 
-converter = DocumentConverter()
+from src.prompt.paper_extractor import PromptPaperExtractor
 
+from src.utils.logger import log_execution_time, logger
+from src.utils.loader import load_config
 
-def convert_paper_to_markdown(path: str | Path, converter: DocumentConverter) -> str:
-    """Convert document to markdown."""
-    doc = converter.convert(str(path)).document
-    return doc.export_to_markdown()
+config_path = '../src/config/paper_extractor.yaml'
+config = load_config(config_path)
 
+TARGET_SECTIONS = config['target_sections']
+llm = BedrockNova(model_id=config['llm_model'])
 
-def split_markdown_sections(markdown: str) -> Dict[str, str]:
-    """Split markdown into sections using heading titles."""
-    
-    sections: Dict[str, str] = {}
-    current_title: str | None = None
-    buffer: List[str] = []
-
-    for line in markdown.splitlines():
-
-        header_match = re.match(r"^#{1,6}\s+(.*)", line)
-
-        if header_match:
-
-            if current_title:
-                sections[current_title] = "\n".join(buffer).strip()
-
-            current_title = header_match.group(1).strip()
-            buffer = []
-            continue
-
-        buffer.append(line)
-
-    if current_title:
-        sections[current_title] = "\n".join(buffer).strip()
-
-    return sections
-
-
-def map_sections_to_schema(
-    sections: Dict[str, str],
-    section_aliases: Dict[str, List[str]],
-) -> Dict[str, str]:
-    """Map parsed sections to normalized research paper schema."""
-
-    paper: Dict[str, str] = {key: "" for key in section_aliases}
-
-    for title, content in sections.items():
-
-        title_lower = title.lower()
-
-        for section_key, aliases in section_aliases.items():
-
-            if any(alias in title_lower for alias in aliases):
-                paper[section_key] += content
-
-    return paper
+# ==========================================================
+# Core Pipeline
+# ==========================================================
 
 @log_execution_time
 def extract_paper_sections(
     path: str | Path,
-    section_aliases: Dict[str, List[str]],
-    converter: DocumentConverter = converter,
-) -> Dict[str, str]:
-    """Full pipeline: document -> markdown -> parsed sections -> mapped schema"""
+    converter: Optional[DocumentConverter] = None,
+) -> Dict[str, Dict[str, str]]:
+    converter = converter or DocumentConverter()
 
-    markdown = convert_paper_to_markdown(path, converter)
+    markdown = _convert_to_markdown(path, converter)
+    raw_sections = _split_markdown(markdown)
 
-    sections = split_markdown_sections(markdown)
+    labels = _classify_sections_with_llm(raw_sections)
 
-    paper = map_sections_to_schema(sections, section_aliases)
+    return _group_sections_by_label(labels, raw_sections)
 
-    return paper
+
+# ==========================================================
+# Step 1: Convert document
+# ==========================================================
+
+def _convert_to_markdown(path: str | Path, converter: DocumentConverter) -> str:
+    document = converter.convert(str(path)).document
+    return document.export_to_markdown()
+
+
+# ==========================================================
+# Step 2: Split markdown into sections
+# ==========================================================
+
+def _split_markdown(markdown: str) -> Dict[str, str]:
+    sections: Dict[str, str] = {}
+    current_title: Optional[str] = None
+    buffer: List[str] = []
+
+    for line in markdown.splitlines():
+        header = _extract_header(line)
+
+        if header:
+            if current_title:
+                sections[current_title] = _join_buffer(buffer)
+
+            current_title = header
+            buffer = []
+        else:
+            buffer.append(line)
+
+    if current_title:
+        sections[current_title] = _join_buffer(buffer)
+
+    return sections
+
+
+def _extract_header(line: str) -> Optional[str]:
+    match = re.match(r"^#{1,6}\s+(.*)", line)
+    return match.group(1).strip() if match else None
+
+
+def _join_buffer(buffer: List[str]) -> str:
+    return "\n".join(buffer).strip()
+
+
+# ==========================================================
+# Step 3: LLM classification
+# ==========================================================
+
+def _classify_sections_with_llm(sections: Dict[str, str], llm: BaseLLM = llm) -> Dict[str, str]:
+    section_titles = list(sections.keys())
+
+    response = llm.run(
+        PromptPaperExtractor.section_grouper(),
+        [{"role": "user", "content": str(section_titles)}],
+    )
+
+    logger.info(
+        "LLM tokens: input=%d output=%d",
+        response.input_tokens,
+        response.output_tokens,
+    )
+
+    return _parse_llm_json(response.content)
+
+
+# ==========================================================
+# Step 4: Parse LLM output
+# ==========================================================
+
+def _parse_llm_json(text: str) -> Dict[str, str]:
+    cleaned = _remove_code_blocks(text)
+    json_str = _extract_json_block(cleaned)
+    json_str = _fix_trailing_commas(json_str)
+
+    return json.loads(json_str)
+
+
+def _remove_code_blocks(text: str) -> str:
+    return re.sub(r"```.*?\n|```", "", text).strip()
+
+
+def _extract_json_block(text: str) -> str:
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        raise ValueError("No JSON found in LLM response")
+    return match.group()
+
+
+def _fix_trailing_commas(text: str) -> str:
+    return re.sub(r",\s*}", "}", text)
+
+
+# ==========================================================
+# Step 5: Group sections
+# ==========================================================
+
+def _group_sections_by_label(
+    labels: Dict[str, str],
+    sections: Dict[str, str],
+) -> Dict[str, Dict[str, str]]:
+    grouped = {section: {} for section in TARGET_SECTIONS}
+
+    for title, label in labels.items():
+        if label in grouped and title in sections:
+            grouped[label][title] = sections[title]
+
+    return grouped

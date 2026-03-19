@@ -1,0 +1,9 @@
+# input_path: ../data/paper_extracted
+# output_path: ../data/paper_summarized
+
+note_tag:
+- insight
+- method
+- result
+- limitation
+- problem

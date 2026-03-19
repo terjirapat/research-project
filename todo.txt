@@ -57,3 +57,13 @@ Result:
 
 Limitation:
 ข้อจำกัดของวิธี
+
+
+ความถูกต้องช่างมันก่อน
+flow test
+paper session ต้องอ่านเป็นแบบ linear
+คือสรุป abstract สองแบบ long, short > long คือสรุปที่ให้คนอ่าน แต่ short คือใช้เพื่อเอาเข้า input ของ session ถัดไป
+เช่น flow abstract, intro, methodology
+ตอนสรุป metho สิ่งที่ input คือ short abstract, short intro, text metho
+
+https://chatgpt.com/share/69bc1502-1aa8-8003-91f1-46857dc2252d

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, Optional, List, Any
 import json
+import yaml
 from src.utils.logger import log_execution_time
 
 import pandas as pd
@@ -81,3 +82,7 @@ def load_json(path: str | Path) -> Dict[str, Any]:
 
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON file: {path}") from e
+    
+@log_execution_time
+def load_config(path: str | Path) -> dict:
+    return yaml.safe_load(Path(path).read_text(encoding="utf-8"))

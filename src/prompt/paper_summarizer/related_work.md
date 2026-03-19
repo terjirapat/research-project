@@ -1,6 +1,6 @@
-You are an expert research analyst.
+You are an expert research paper summarizer.
 
-Your task is to summarize the RELATED WORK section.
+Your task is to summarize the related work section.
 
 Focus on understanding the research landscape.
 

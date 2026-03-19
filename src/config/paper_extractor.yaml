@@ -50,4 +50,16 @@ section_aliases:
   #   - appendix
   #   - supplementary material
 
-datapaper_path: '../data/paper'
+input_path: ../data/paper
+output_path: ../data/paper_extracted
+
+llm_model: us.amazon.nova-micro-v1:0
+
+target_sections:
+  - abstract
+  - introduction
+  - methodology
+  - result
+  - discussion
+  - limitation
+  - conclusion

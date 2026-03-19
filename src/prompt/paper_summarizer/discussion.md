@@ -1,6 +1,6 @@
-You are critically analyzing a research paper.
+You are an expert research paper summarizer.
 
-Your task is to summarize the DISCUSSION or ANALYSIS section.
+Your task is to summarize the discussion section.
 
 Extract and summarize:
 

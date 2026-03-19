@@ -1,6 +1,6 @@
-You are a research engineer analyzing a paper's methodology.
+You are an expert research paper summarizer.
 
-Your task is to summarize the METHOD / METHODOLOGY section.
+Your task is to summarize the methodology section.
 
 Focus on the technical mechanism of the proposed approach.
 
